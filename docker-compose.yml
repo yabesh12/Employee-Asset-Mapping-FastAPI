@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:14.0
+    restart: always
+    environment:
+      - POSTGRES_USER=employeeAssetUser
+      - POSTGRES_PASSWORD=employeeAssetPassword
+      - POSTGRES_DB=employee_asset
+    volumes:
+      - employee_asset_db_data:/var/lib/postgresql/data
+    networks:
+      - employee_asset_backend_tier
+  redis:
+    image: redis:latest
+    restart: always
+    networks:
+      - employee_asset_backend_tier
+  employee_asset:
+    build: .
+    restart: always
+    command: uvicorn main:app --host 0.0.0.0
+    env_file: .env
+    volumes:
+      - .:/app
+    ports:
+      - 8000:8000
+    networks:
+      - employee_asset_backend_tier
+
+volumes:
+  employee_asset_db_data:
+    driver: local
+  static_volume:
+    driver: local
+
+
+networks:
+  employee_asset_backend_tier:
+    driver: bridge
